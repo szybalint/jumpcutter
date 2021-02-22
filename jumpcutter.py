@@ -13,6 +13,7 @@ import argparse
 from pytube import YouTube
 import unicodedata
 
+
 def splitVideoToSmallParts(INPUT_FILE):
     segment_time = 60 * 10
     createPath("parts")
@@ -23,6 +24,7 @@ def splitVideoToSmallParts(INPUT_FILE):
               " -reset_timestamps 1 -sc_threshold 0 -f segment " + outputpath
     subprocess.call(command, shell=True)
     return os.listdir("parts")
+
 
 def downloadFile(url):
     name = YouTube(url).streams.first().download()
@@ -48,7 +50,7 @@ def copyFrame(inputFrame, outputFrame):
     return True
 
 
-def inputToOutputFilename(filename, currentOutput = ""):
+def inputToOutputFilename(filename, currentOutput=""):
     base_filename = filename.split("\\")[-1]
     dotIndex = base_filename.rfind(".")
     return base_filename[:dotIndex] + "_ALTERED" + currentOutput + base_filename[dotIndex:]
@@ -57,17 +59,19 @@ def inputToOutputFilename(filename, currentOutput = ""):
 def createPath(s):
     # assert (not os.path.exists(s)), "The filepath "+s+" already exists. Don't want to overwrite it. Aborting."
 
-    try:  
+    try:
         os.mkdir(s)
-    except OSError:  
+    except OSError:
         assert False, "Creation of the directory %s failed. (The TEMP folder may already exist. Delete or rename it, and try again.)"
 
-def deletePath(s): # Dangerous! Watch out!
+
+def deletePath(s):  # Dangerous! Watch out!
     try:
-        rmtree(s,ignore_errors=False)
+        rmtree(s, ignore_errors=False)
     except OSError:
-        print ("Deletion of the directory %s failed" % s)
+        print("Deletion of the directory %s failed" % s)
         print(OSError)
+
 
 def concatenateVideoParts(outputfile):
     subprocess.call("chcp 65001", shell=True)
@@ -78,6 +82,7 @@ def concatenateVideoParts(outputfile):
     partnames_concatenated = partnames_concatenated[:-1] + " )>" + os.path.join("result", "list.txt") + " & "
     command = partnames_concatenated + "ffmpeg -safe 0 -f concat -i " + os.path.join("result", "list.txt") + " -c copy " + outputfile
     subprocess.call(command, shell=True)
+
 
 parser = argparse.ArgumentParser(
     description='Modifies a video file to play at different speeds when there is sound vs. silence.')
