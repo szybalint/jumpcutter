@@ -62,7 +62,7 @@ def createPath(s):
     try:
         os.mkdir(s)
     except OSError:
-        assert False, "Creation of the directory %s failed. (The TEMP folder may already exist. Delete or rename it, and try again.)"
+        assert False, "Creation of the directory " + s + " failed. (The TEMP folder may already exist. Delete or rename it, and try again.)"
 
 
 def deletePath(s):  # Dangerous! Watch out!
