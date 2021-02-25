@@ -1,5 +1,6 @@
 import argparse
 import os
+import subprocess
 
 from pytube import YouTube
 
@@ -22,16 +23,35 @@ def parse_arguments():
 
 def download_file(url):
     print("downloading file or getting path if file exists")
+
     yt = YouTube(url)
     name = yt.title.replace(" ", "_").lower()
+
     try:
         print("trying 720p")
         filepath = yt.streams.get_by_resolution("720p").download(filename=name, skip_existing=True)
     except:
         print("720p failed, getting highest available resolution")
         filepath = yt.streams.get_highest_resolution().download(filename=name, skip_existing=True)
-    print("downloading or getting path finished")
+
+    print("downloaded file or got path")
+
     return filepath
+
+
+def create_directory_or_clear_content(dirname) -> str:
+    try:
+        print("trying to create %s directory" % dirname)
+        os.mkdir(dirname)
+    except FileExistsError:
+        print("%s directory already exists, cleaning contents" % dirname)
+        for root, dirs, files in os.walk(dirname):
+            for file in files:
+                os.remove(os.path.join(root, file))
+    except:
+        raise
+
+    return os.path.abspath(dirname)
 
 
 def main():
@@ -44,6 +64,25 @@ def main():
         args.input_file = download_file(args.url)
 
     print("working with file:", args.input_file)
+
+    # separate audio and video in temp folder
+    temp_path = create_directory_or_clear_content("temp")
+    print("absolute path to temp directory: %s" % temp_path)
+
+    command = "../ffmpeg/ffmpeg -i '" + args.input_file + "' "
+
+    '''
+    steps to replicate: 
+    separate audio from video (or simply extract audio)
+    analize audio, detect silence, mark silent parts, cut audio, assemble audio,
+    cut video accordingly, assemble video, combine video and audio
+    speed up: when? before or after combining?
+    multithreading: cut into smaller parts beforehand
+    maybe get system information and cut according to core count?
+    https://ffmpeg.org/ffmpeg.html
+    https://heartbeat.fritz.ai/working-with-audio-signals-in-python-6c2bd63b2daf
+    ffmpeg -i vid.avi -map 0:a audio.wav -map 0:v onlyvideo.avi
+    '''
 
 
 if __name__ == "__main__":
